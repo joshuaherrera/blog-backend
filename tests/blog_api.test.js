@@ -66,6 +66,8 @@ test("if no title/url, get 400 response", async () => {
     likes: 99,
   };
   await api.post("/api/blogs").send(missingUrl).expect(400);
+  let blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
 
   const missingTitle = {
     author: "lucyg",
@@ -73,6 +75,8 @@ test("if no title/url, get 400 response", async () => {
     url: "google.com",
   };
   await api.post("/api/blogs").send(missingTitle).expect(400);
+  blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
 });
 
 afterAll(() => {
