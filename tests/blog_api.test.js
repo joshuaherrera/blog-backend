@@ -26,6 +26,27 @@ test("id parameter is defined", async () => {
   expect(res.body[0].id).toBeDefined();
 });
 
+test("able to delete a blog", async () => {
+  const newBlog = {
+    title: "to be deleted",
+    author: "lucyg",
+    url: "www.jesus.com",
+    likes: 9009,
+  };
+  const res = await api
+    .post("/api/blogs")
+    .send(newBlog)
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
+
+  expect(res.body.id).toBeDefined();
+
+  const idToDelete = res.body.id;
+  await api.delete(`/api/blogs/${idToDelete}`).expect(204);
+  const blogsAtEnd = await helper.blogsInDb();
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
+
 test("blog is posted", async () => {
   const newBlog = {
     title: "test blog",
@@ -77,6 +98,35 @@ test("if no title/url, get 400 response", async () => {
   await api.post("/api/blogs").send(missingTitle).expect(400);
   blogsAtEnd = await helper.blogsInDb();
   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+});
+
+test("able to update blog", async () => {
+  const newBlog = {
+    title: "test update",
+    author: "jazz",
+    url: "www.jesus.com",
+    likes: 1,
+  };
+
+  const post = await api.post("/api/blogs").send(newBlog).expect(201);
+
+  const blogToUpdate = post.body.id;
+  const updatedBlog = {
+    title: "test update done",
+    author: "jay",
+    url: "www.jesussaves.com",
+    likes: 777,
+  };
+
+  const res = await api
+    .put(`/api/blogs/${blogToUpdate}`)
+    .send(updatedBlog)
+    .expect(200)
+    .expect("Content-Type", /application\/json/);
+
+  // add id to do comparison at the end
+  updatedBlog.id = blogToUpdate;
+  expect(res.body).toEqual(updatedBlog);
 });
 
 afterAll(() => {
